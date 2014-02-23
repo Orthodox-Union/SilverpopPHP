@@ -50,13 +50,14 @@ class EngagePod {
      * 18 - Contact Lists
      *
      */
-    public function getLists($listType = 2, $isPrivate = true, $folder = null) {
+    public function getLists($listType = 2, $isPrivate = true, $folder = null, $include = 'False') {
         $data["Envelope"] = array(
             "Body" => array(
                 "GetLists" => array(
                     "VISIBILITY" => ($isPrivate ? '0' : '1'),
                     "FOLDER_ID" => $folder,
                     "LIST_TYPE" => $listType,
+                    "INCLUDE_ALL_LISTS " => $include,
                 ),
             ),
         );
