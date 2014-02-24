@@ -1,9 +1,9 @@
 {
-    "name": "Orthodox-Union/silverpopphp",
+    "name": "Orthodox-Union/SilverpopPHP",
     "type": "library",
     "description": "Silverpop API in php",
     "keywords": ["Silverpop","email", "API", "XML-API"],
-    "homepage": "https://github.com/orthodox-Union/SilverpopPHP",
+    "homepage": "https://github.com/Orthodox-Union/SilverpopPHP",
     "license": "GPL",
     "authors": [
         {
