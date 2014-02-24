@@ -1,6 +1,10 @@
 <?php
 
-include_once 'Util/ArrayToXml.php';
+namespace Silverpop;
+
+use Silverpop\Util\ArrayToXML;
+
+//include_once 'Util/ArrayToXml.php';
 
 class EngagePod {
 
