@@ -223,6 +223,23 @@ class EngagePod {
             throw new \Exception("AddRecipient Error: ".$this->_getErrorFromResponse($response));
         }
     }
+    
+    public function addContactToList($contactID, $contactListID) {
+      $data["Envelope"] = array(
+          "Body" => array(
+            "AddContactToContactList" => array(
+            "CONTACT_LIST_ID" => $contactListID,
+            "CONTACT_ID" => $contactID
+          ),
+        ),
+      );
+      $response = $this->_request($data);
+      $result = $response["Envelope"]["Body"]["RESULT"];
+      if ($this->_isSuccess($result))
+        return true;
+      else
+        return $this->_getErrorFromResponse($response);
+    }
 
     public function getContact($databaseID, $email)
     {
