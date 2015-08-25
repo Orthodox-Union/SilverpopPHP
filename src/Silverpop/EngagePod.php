@@ -96,30 +96,30 @@ class EngagePod {
      * Creates a new contact list
      *
      */
-    // public function createContactList($databaseID, $name, $visibility = 1, $parentFolderId = null, $parentFolderPath = null) {
-        // $data["Envelope"] = array(
-            // "Body" => array(
-                // "CreateContactList" => array(
-                    // "DATABASE_ID" => $databaseID,
-                    // "CONTACT_LIST_NAME" => $name,
-                    // "VISIBILITY" => $visibility,
-                    // "PARENT_FOLDER_ID " => $parentFolderId,
-                    // "PARENT_FOLDER_PATH " => $parentFolderPath
-                // ),
-            // ),
-        // );
-        // $response = $this->_request($data);
-        // $result = $response["Envelope"]["Body"]["RESULT"];
-        // if ($this->_isSuccess($result)) {
-            // if (isset($result['CONTACT_LIST_ID']))
-                // return $result['CONTACT_LIST_ID'];
-            // else {
-                // return array(); //?
-            // }
-        // } else {
-            // throw new \Exception("CreateContactList Error: ".$this->_getErrorFromResponse($response));
-        // }
-    // }    
+    public function createContactList($databaseID, $name, $visibility = 1, $parentFolderId = null, $parentFolderPath = null) {
+        $data["Envelope"] = array(
+            "Body" => array(
+                "CreateContactList" => array(
+                    "DATABASE_ID" => $databaseID,
+                    "CONTACT_LIST_NAME" => $name,
+                    "VISIBILITY" => $visibility,
+                    "PARENT_FOLDER_ID " => $parentFolderId,
+                    "PARENT_FOLDER_PATH " => $parentFolderPath
+                ),
+            ),
+        );
+        $response = $this->_request($data);
+        $result = $response["Envelope"]["Body"]["RESULT"];
+        if ($this->_isSuccess($result)) {
+            if (isset($result['CONTACT_LIST_ID']))
+                return $result['CONTACT_LIST_ID'];
+            else {
+                return array(); //?
+            }
+        } else {
+            throw new \Exception("CreateContactList Error: ".$this->_getErrorFromResponse($response));
+        }
+    }    
     
     /**
      * Get mailing templates
