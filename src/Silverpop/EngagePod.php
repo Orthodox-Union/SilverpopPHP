@@ -80,13 +80,13 @@ class EngagePod {
      * Creates a new contact list
      *
      */
-    public function createContactList($databaseID, $name, $visibility = 1, $parentFolderId = null, $parentFolderPath = null) {
+    public function createContactList($databaseID, $name, $visibility = true, $parentFolderId = null, $parentFolderPath = null) {
         $data["Envelope"] = array(
             "Body" => array(
                 "CreateContactList" => array(
                     "DATABASE_ID" => $databaseID,
                     "CONTACT_LIST_NAME" => $name,
-                    "VISIBILITY" => $visibility,
+                    "VISIBILITY" => ($visibility ? '0' : '1'),
                     "PARENT_FOLDER_ID " => $parentFolderId,
                     "PARENT_FOLDER_PATH " => $parentFolderPath
                 ),
