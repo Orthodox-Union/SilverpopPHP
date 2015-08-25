@@ -102,7 +102,7 @@ class EngagePod {
                 "CreateContactList" => array(
                     "DATABASE_ID" => $databaseID,
                     "CONTACT_LIST_NAME" => $name,
-                    "VISIBILITY" => ($visibility ? '0' : '1'),
+                    "VISIBILITY" => ($visibility ? '1' : '0'),
                     "PARENT_FOLDER_ID " => $parentFolderId,
                     "PARENT_FOLDER_PATH " => $parentFolderPath
                 ),
