@@ -247,6 +247,13 @@ class EngagePod {
                     "LIST_ID" => $databaseID,
                     "CREATED_FROM" => $createdFrom,
                     "SEND_AUTOREPLY"  => ($sendAutoReply ? 'true' : 'false'),
+                    // needs SYNC_FIELDS for updating Flexible Databases
+                    "SYNC_FIELDS" => array(
+                        "SYNC_FIELD" => array(
+                            "NAME" => "EMAIL",
+                            "VALUE" => $columns['Email']
+                        )
+                    ),
                     "UPDATE_IF_FOUND" => ($updateIfFound ? 'true' : 'false'),
                     "ALLOW_HTML" => ($allowHTML ? 'true' : 'false'),
                     "VISITOR_KEY" => $visitorKey,
