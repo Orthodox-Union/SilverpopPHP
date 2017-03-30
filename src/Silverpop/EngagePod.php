@@ -818,7 +818,7 @@ class EngagePod {
      *
      * Returns the data job id
      */
-    public function exportList($listId, $exportType = 'ALL', $exportFormat = 'CSV')
+    public function exportList($listId, $exportType = 'ALL', $exportFormat = 'CSV', $addToStoredFiles = false)
     {
         $data["Envelope"] = array(
             "Body" => array(
@@ -826,18 +826,21 @@ class EngagePod {
                     "LIST_ID" => $listId,
                     "EXPORT_TYPE" => $exportType,
                     "EXPORT_FORMAT" => $exportFormat,
-                    "FILE_ENCODING" => 'utf-8',
-                    "ADD_TO_STORED_FILES" => true
+                    "FILE_ENCODING" => 'utf-8'
                 )
             )
         );
+
+        if ($addToStoredFiles) {
+            $data["Envelope"]["Body"]["ExportList"]["ADD_TO_STORED_FILES"] = true;
+        }
 
         $response = $this->_request($data);
         $result = $response["Envelope"]["Body"]["RESULT"];
 
         if ($this->_isSuccess($result)) {
             if (isset($result['JOB_ID']))
-                return $result['JOB_ID'];
+                return $result;
             else {
                 throw new \Exception('Export list job created but no job ID was returned from the server.');
             }
