@@ -2,7 +2,7 @@
 
 namespace Silverpop;
 
-use Silverpop\Util\ArrayToXml;
+use Silverpop\Util\ArrayToXML;
 
 //include_once 'Util/ArrayToXml.php';
 
@@ -35,22 +35,6 @@ class EngagePod {
         $this->_baseUrl = 'http://api' . $config['engage_server'] . '.silverpop.com/XMLAPI';
         $this->_login($config['username'], $config['password']);
 
-    }
-
-    /**
-     * Terminate the session with Silverpop.
-     *
-     * @return bool
-     */
-    public function logOut() {
-      $data["Envelope"] = array(
-        "Body" => array(
-          "Logout" => ""
-        ),
-      );
-      $response = $this->_request($data);
-      $result = $response["Envelope"]["Body"]["RESULT"];
-      return $this->_isSuccess($result);
     }
 
     /**
@@ -238,25 +222,16 @@ class EngagePod {
 
     /**
      * Add a contact to a list
-     * https://kb.silverpop.com/kb/Engage/API/API_XML/XML_API_Developer_Guide/03_Contact_XML_Interfaces/02_Database_Management_Interfaces_-_Contact/01_Add_a_Contact
+     *
      */
-    public function addContact($databaseID, $updateIfFound, $columns, $contactListID = false, $sendAutoReply = false, $allowHTML = false, $createdFrom = 1, $visitorKey = '', $syncFields = []) {
+    public function addContact($databaseID, $updateIfFound, $columns, $contactListID = false, $sendAutoReply = false) {
         $data["Envelope"] = array(
             "Body" => array(
                 "AddRecipient" => array(
                     "LIST_ID" => $databaseID,
-                    "CREATED_FROM" => $createdFrom,
+                    "CREATED_FROM" => 1,         // 1 = created manually, 2 = opted in
                     "SEND_AUTOREPLY"  => ($sendAutoReply ? 'true' : 'false'),
-                    // needs SYNC_FIELDS for updating Flexible Databases
-                    "SYNC_FIELDS" => array(
-                        "SYNC_FIELD" => array(
-                            "NAME" => "EMAIL",
-                            "VALUE" => $columns['Email']
-                        )
-                    ),
                     "UPDATE_IF_FOUND" => ($updateIfFound ? 'true' : 'false'),
-                    "ALLOW_HTML" => ($allowHTML ? 'true' : 'false'),
-                    "VISITOR_KEY" => $visitorKey,
                     "CONTACT_LISTS" => ($contactListID) ? array("CONTACT_LIST_ID" => $contactListID) : '',
                     "COLUMN" => array(),
                 ),
@@ -264,9 +239,6 @@ class EngagePod {
         );
         foreach ($columns as $name => $value) {
             $data["Envelope"]["Body"]["AddRecipient"]["COLUMN"][] = array("NAME" => $name, "VALUE" => $value);
-        }
-        foreach ($syncFields as $name => $value) {
-            $data["Envelope"]["Body"]["AddRecipient"]["SYNC_FIELDS"]["SYNC_FIELD"][] = array("NAME" => $name, "VALUE" => $value);
         }
         $response = $this->_request($data);
         $result = $response["Envelope"]["Body"]["RESULT"];
@@ -298,56 +270,16 @@ class EngagePod {
         return $this->_getErrorFromResponse($response);
     }
 
-    public function addContactToContactList($contactId, $contactListId, $columns) {
+    public function getContact($databaseID, $email)
+    {
         $data["Envelope"] = array(
             "Body" => array(
-                "AddContactToContactList" => array(
-                    "CONTACT_ID" => $contactId,
-                    "CONTACT_LIST_ID" => $contactListId,
+                "SelectRecipientData" => array(
+                    "LIST_ID" => $databaseID,
+                    "EMAIL"   => $email
                 ),
             ),
         );
-        foreach ($columns as $name => $value) {
-            $data["Envelope"]["Body"]["AddContactToContactList"]["COLUMN"][] = array("NAME" => $name, "VALUE" => $value);
-        }
-        $response = $this->_request($data);
-        $result = $response["Envelope"]["Body"]["RESULT"];
-        if ($this->_isSuccess($result)) {
-            return true;
-        } else {
-            throw new \Exception("AddRecipient Error: ".$this->_getErrorFromResponse($response));
-        }
-    }
-
-    public function getContact($databaseID, $email = null, $recipientId = null, $encodedRecipientId = null , $returnContactLists = false, $columns = null)
-    {
-
-      if ( empty( $email ) && empty( $recipientId ) ) {
-        throw new \Exception('One of Email address or Recipient ID must have a value.');
-      }
-
-      $data["Envelope"] = array(
-        "Body" => array(
-          "SelectRecipientData" => array(
-            "LIST_ID" => $databaseID,
-            "EMAIL"   => empty($recipientId) ? $email : null,
-            "RECIPIENT_ID" => !empty($recipientId) ? $recipientId : null,
-            "ENCODED_RECIPIENT_ID" => !empty($encodedRecipientId) ? $encodedRecipientId : null,
-            "RETURN_CONTACT_LISTS" => (bool) $returnContactLists,
-          ),
-        ),
-      );
-
-      if ( !empty($columns) && is_array($columns) ) {
-        $column_data = array();
-        foreach ($columns as $key => $value ) {
-          $column_data[] = array(
-            "NAME" => $key,
-            "VALUE" => $columns[$key],
-          );
-        }
-        $data["Envelope"]["Body"]["SelectRecipeientData"]["COLUMN"] = $column_data;
-      }
 
         $response = $this->_request($data);
         $result = $response["Envelope"]["Body"]["RESULT"];
@@ -410,23 +342,19 @@ class EngagePod {
      * @throws \Exception
      * @return int recipient ID
      */
-    public function updateContact($databaseID, $oldEmail, $columns, $visitorKey = '', $syncFields = []) {
+    public function updateContact($databaseID, $oldEmail, $columns) {
         $data["Envelope"] = array(
             "Body" => array(
                 "UpdateRecipient" => array(
                     "LIST_ID"         => $databaseID,
                     "OLD_EMAIL"       => $oldEmail,
                     "CREATED_FROM"    => 1,        // 1 = created manually
-                    "VISITOR_KEY"     => $visitorKey,
                     "COLUMN" => array(),
                 ),
             ),
         );
         foreach ($columns as $name => $value) {
             $data["Envelope"]["Body"]["UpdateRecipient"]["COLUMN"][] = array("NAME" => $name, "VALUE" => $value);
-        }
-        foreach ($syncFields as $name => $value) {
-            $data["Envelope"]["Body"]["AddRecipient"]["SYNC_FIELDS"]["SYNC_FIELD"][] = array("NAME" => $name, "VALUE" => $value);
         }
         $response = $this->_request($data);
         $result = $response["Envelope"]["Body"]["RESULT"];
@@ -704,154 +632,6 @@ class EngagePod {
     }
 
     /**
-	 * This interface inserts or updates relational data
-	 *
-	 * For each Row that is passed in:
-	 * - If a row is found having the same key as the passed in row, update the record.
-	 * - If no matching row is found, insert a new row setting the column values to those passed in the request.
-	 *
-	 * Only one hundred rows may be passed in a single insertUpdateRelationalTable call!
-	 */
-    public function insertUpdateRelationalTable($tableId, $rows) {
-	    $processedRows = array();
-        $attribs = array();
-	    foreach($rows as $row) {
-		    $columns = array();
-		    foreach($row as $name => $value)
-		    {
-			    $columns['COLUMN'][] = $value;
-			    $attribs[5]['COLUMN'][] = array('name' => $name);
-		    }
-
-		    $processedRows['ROW'][] = $columns;
-	    }
-
-	    $data["Envelope"] = array(
-            "Body" => array(
-                "InsertUpdateRelationalTable" => array(
-                    "TABLE_ID" => $tableId,
-                    "ROWS" => $processedRows,
-                ),
-            ),
-        );
-
-        $response = $this->_request($data, array(), $attribs);
-        $result = $response["Envelope"]["Body"]["RESULT"];
-
-        if ($this->_isSuccess($result)) {
-            return true;
-        } else {
-            throw new \Exception("insertUpdateRelationalTable Error: ".$this->_getErrorFromResponse($response));
-        }
-    }
-
-    /**
-	 * This interface deletes records from a relational table.
-	 */
-    public function deleteRelationalTableData($tableId, $rows) {
-	    $processedRows = array();
-        $attribs = array();
-	    foreach($rows as $row) {
-		    $columns = array();
-		    foreach($row as $name => $value)
-		    {
-			    $columns['KEY_COLUMN'][] = $value;
-			    $attribs[5]['KEY_COLUMN'][] = array('name' => $name);
-		    }
-
-		    $processedRows['ROW'][] = $columns;
-	    }
-
-	    $data["Envelope"] = array(
-            "Body" => array(
-                "DeleteRelationalTableData" => array(
-                    "TABLE_ID" => $tableId,
-                    "ROWS" => $processedRows,
-                ),
-            ),
-        );
-
-        $response = $this->_request($data, array(), $attribs);
-        $result = $response["Envelope"]["Body"]["RESULT"];
-
-        if ($this->_isSuccess($result)) {
-            return true;
-        } else {
-            throw new \Exception("deleteRelationalTableData Error: ".$this->_getErrorFromResponse($response));
-        }
-    }
-
-    /**
-     * Import a list/database
-     *
-     * Requires a file to import and a mapping file to be in the 'upload' directory of the Engage FTP server
-     *
-     * Returns the data job id
-     *
-     */
-    public function importList($fileName, $mapFileName) {
-
-        $data["Envelope"] = array(
-            "Body" => array(
-                "ImportList" => array(
-                    "MAP_FILE" => $mapFileName,
-                    "SOURCE_FILE" => $fileName,
-                ),
-            ),
-        );
-
-        $response = $this->_request($data);
-        $result = $response["Envelope"]["Body"]["RESULT"];
-
-        if ($this->_isSuccess($result)) {
-            if (isset($result['JOB_ID']))
-                return $result['JOB_ID'];
-            else {
-                throw new \Exception('Import list query created but no job ID was returned from the server.');
-            }
-        } else {
-            throw new \Exception("importList Error: ".$this->_getErrorFromResponse($response));
-        }
-
-    }
-
-    /**
-     * Export a list/database
-     *
-     * Returns the data job id
-     */
-    public function exportList($listId, $exportType = 'ALL', $exportFormat = 'CSV', $addToStoredFiles = false)
-    {
-        $data["Envelope"] = array(
-            "Body" => array(
-                "ExportList" => array(
-                    "LIST_ID" => $listId,
-                    "EXPORT_TYPE" => $exportType,
-                    "EXPORT_FORMAT" => $exportFormat,
-                    "FILE_ENCODING" => 'utf-8'
-                )
-            )
-        );
-
-        if ($addToStoredFiles) {
-            $data["Envelope"]["Body"]["ExportList"]["ADD_TO_STORED_FILES"] = true;
-        }
-
-        $response = $this->_request($data);
-        $result = $response["Envelope"]["Body"]["RESULT"];
-
-        if ($this->_isSuccess($result)) {
-            if (isset($result['JOB_ID']))
-                return $result;
-            else {
-                throw new \Exception('Export list job created but no job ID was returned from the server.');
-            }
-        } else {
-            throw new \Exception("exportList Error: " . $this->_getErrorFromResponse($response));
-        }
-    }
-
-    /**
      * Get a data job status
      *
      * Returns the status or throws an exception
@@ -923,7 +703,7 @@ class EngagePod {
 
         if (is_array($data))
         {
-            $atx = new ArrayToXml($data, $replace, $attribs);;
+            $atx = new ArrayToXML($data, $replace, $attribs);;
             $xml = $atx->getXML();
         }
         else
@@ -960,13 +740,10 @@ class EngagePod {
         $ch = curl_init();
 
         //set the url, number of POST vars, POST data
-        curl_setopt($ch,CURLOPT_HTTPHEADER, array('Expect:'));
         curl_setopt($ch,CURLOPT_URL,$this->_getFullUrl());
         curl_setopt($ch,CURLOPT_POST,count($fields));
         curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-        curl_setopt($ch,CURLOPT_HTTPHEADER,array (
-   "Content-Type: application/x-www-form-urlencoded; charset=utf-8" ));
 
         //execute post
         $result = curl_exec($ch);
